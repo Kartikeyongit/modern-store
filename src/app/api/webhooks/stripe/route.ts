@@ -3,11 +3,10 @@ import { stripe } from "@/lib/stripe";
 import { db } from "@/db";
 import { orders } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { headers } from "next/headers";
 
 export async function POST(req: Request) {
   const body = await req.text();
-  const signature = (await headers()).get("stripe-signature")!;
+  const signature = req.headers.get("stripe-signature")!;
 
   let event;
 
@@ -29,35 +28,43 @@ export async function POST(req: Request) {
     const orderId = session.metadata?.orderId;
 
     console.log("Processing order:", orderId);
+    console.log("Payment status:", session.payment_status);
 
     if (orderId) {
       try {
-        const existingOrder = await db.query.orders.findFirst({
+        // Try direct update
+        const result = await db
+          .update(orders)
+          .set({
+            status: "Processing",
+            paymentStatus: "Paid",
+          })
+          .where(eq(orders.id, orderId));
+
+        console.log("Update result:", result);
+
+        // Verify the update
+        const updated = await db.query.orders.findFirst({
           where: eq(orders.id, orderId),
         });
 
-        if (existingOrder) {
-          await db
-            .update(orders)
-            .set({
-              status: "Processing",
-              paymentStatus: "Paid",
-            })
-            .where(eq(orders.id, orderId));
-          console.log("Order marked as paid:", orderId);
+        if (updated) {
+          console.log("Order after update:", {
+            id: updated.id,
+            status: updated.status,
+            paymentStatus: updated.paymentStatus,
+          });
         } else {
-          console.log("Order not found in database:", orderId);
+          console.log("Order not found after update attempt");
         }
       } catch (error) {
-        console.error("Failed to update order:", error);
+        console.error("Database error:", error);
+        return NextResponse.json(
+          { error: "Database update failed" },
+          { status: 500 }
+        );
       }
-    } else {
-      console.log("No orderId found in session metadata");
     }
-  }
-
-  if (event.type === "payment_intent.payment_failed") {
-    console.log("Payment failed for intent:", event.data.object.id);
   }
 
   return NextResponse.json({ received: true });
