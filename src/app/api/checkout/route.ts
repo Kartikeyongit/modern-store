@@ -57,13 +57,15 @@ export async function POST(req: Request) {
     const total = subtotal + shipping + tax;
     const orderId = uuidv4();
 
+    const baseUrl = process.env.AUTH_URL?.replace(/\/$/, "");
+
     // Create Stripe checkout session
     const stripeSession = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `${process.env.AUTH_URL}/checkout/success?order_id=${orderId}`,
-      cancel_url: `${process.env.AUTH_URL}/checkout?cancelled=true`,
+      success_url: `${baseUrl}/checkout/success?order_id=${orderId}`,
+      cancel_url: `${baseUrl}/checkout?cancelled=true`,
       metadata: {
         orderId,
         userId: (session.user as any).id,
