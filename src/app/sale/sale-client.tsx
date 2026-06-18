@@ -35,7 +35,6 @@ export function SaleClient({ saleProducts }: { saleProducts: any[] }) {
       <section className="relative py-20 overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1607082349566-187342175e2f?w=1600&q=80')" }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/80 to-white" />
         

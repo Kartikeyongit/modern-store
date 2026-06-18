@@ -132,17 +132,17 @@ export function HomePageClient({ featuredProducts }: { featuredProducts: any[] }
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gray-50 pb-16">
         <motion.div
           animate={{ rotate: 360, scale: [1, 1.2, 1] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          transition={{ duration: 10 }}
           className="absolute top-20 left-20 w-96 h-96 bg-purple-200/50 rounded-full blur-3xl"
         />
         <motion.div
           animate={{ rotate: -360, scale: [1, 1.3, 1] }}
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+          transition={{ duration: 10 }}
           className="absolute bottom-20 right-20 w-[500px] h-[500px] bg-pink-200/50 rounded-full blur-3xl"
         />
         <motion.div
           animate={{ rotate: 180, scale: [1, 1.15, 1] }}
-          transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
+          transition={{ duration: 10 }}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-200/40 rounded-full blur-3xl"
         />
 
@@ -193,7 +193,7 @@ export function HomePageClient({ featuredProducts }: { featuredProducts: any[] }
       </section>
 
       {/* ─── INFINITE MOVING STRIP ─── */}
-      <div className="relative z-20 bg-white py-4 overflow-hidden -mt-10">
+      <div className="relative z-20 bg-white py-10 overflow-hidden -mt-10">
         <div className="flex gap-8 animate-marquee whitespace-nowrap">
           {[...stripItems, ...stripItems].map((item, index) => (
             <span key={index} className="text-gray-700 text-sm font-medium tracking-wide flex items-center gap-4">
@@ -208,7 +208,6 @@ export function HomePageClient({ featuredProducts }: { featuredProducts: any[] }
       <section className="relative py-20 overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1600&q=80')" }}
         />
         <div className="absolute inset-0 bg-white/80 backdrop-blur-md" />
         
@@ -242,18 +241,6 @@ export function HomePageClient({ featuredProducts }: { featuredProducts: any[] }
         </div>
       </section>
 
-      {/* Divider Strip */}
-      <div className="relative z-20 bg-white py-4 overflow-hidden">
-        <div className="flex gap-8 animate-marquee whitespace-nowrap">
-          {[...categoryStrip, ...categoryStrip].map((item, index) => (
-            <span key={index} className="text-gray-700 text-sm font-medium tracking-wide flex items-center gap-4">
-              <span className="w-2 h-2 bg-gray-400 rounded-full" />
-              {item}
-            </span>
-          ))}
-        </div>
-      </div>
-
       {/* ─── SERVICES SECTION ─── */}
       <section className="relative py-20 overflow-hidden">
         <div 
@@ -282,23 +269,10 @@ export function HomePageClient({ featuredProducts }: { featuredProducts: any[] }
         </div>
       </section>
 
-      {/* Divider Strip */}
-      <div className="relative z-20 bg-white py-4 overflow-hidden">
-        <div className="flex gap-8 animate-marquee whitespace-nowrap">
-          {[...serviceStrip, ...serviceStrip].map((item, index) => (
-            <span key={index} className="text-gray-700 text-sm font-medium tracking-wide flex items-center gap-4">
-              <span className="w-2 h-2 bg-gray-400 rounded-full" />
-              {item}
-            </span>
-          ))}
-        </div>
-      </div>
-
       {/* ─── TESTIMONIALS SECTION ─── */}
       <section className="relative py-20 overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1600&q=80')" }}
         />
         <div className="absolute inset-0 bg-white/85 backdrop-blur-md" />
         
@@ -331,18 +305,6 @@ export function HomePageClient({ featuredProducts }: { featuredProducts: any[] }
           </div>
         </div>
       </section>
-
-      {/* Divider Strip */}
-      <div className="relative z-20 bg-white py-4 overflow-hidden">
-        <div className="flex gap-8 animate-marquee whitespace-nowrap">
-          {[...testimonialStrip, ...testimonialStrip].map((item, index) => (
-            <span key={index} className="text-gray-700 text-sm font-medium tracking-wide flex items-center gap-4">
-              <span className="w-2 h-2 bg-gray-400 rounded-full" />
-              {item}
-            </span>
-          ))}
-        </div>
-      </div>
 
       {/* ─── CTA SECTION ─── */}
       <section className="relative py-20 overflow-hidden">

@@ -64,7 +64,6 @@ export default function CollectionsPage() {
       <section className="relative py-20 overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1600&q=80')" }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/80 to-white" />
         

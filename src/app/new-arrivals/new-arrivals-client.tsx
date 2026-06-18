@@ -41,7 +41,6 @@ export function NewArrivalsClient({ newProducts }: { newProducts: any[] }) {
       <section className="relative py-20 overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?w=1600&q=80')" }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/80 to-white" />
         
