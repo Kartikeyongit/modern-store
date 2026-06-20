@@ -23,7 +23,7 @@ export async function GET(req: Request) {
     }));
 
     return NextResponse.json(parsed);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Search failed" }, { status: 500 });
   }
 }

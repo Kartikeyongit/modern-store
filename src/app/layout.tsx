@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
-import { Navbar } from "@/components/layout/Navbar";
-import { CartDrawer } from "@/components/cart/CartDrawer";
+import dynamic from "next/dynamic";
 import "./globals.css";
+
+const CartDrawer = dynamic(() => import("@/components/cart/CartDrawer").then((m) => m.CartDrawer), { ssr: false });
 
 const inter = Inter({
   subsets: ["latin"],
@@ -25,7 +26,6 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`}>
         <SessionProvider>
-          <Navbar />
           {children}
           <CartDrawer />
         </SessionProvider>

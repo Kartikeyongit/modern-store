@@ -30,32 +30,24 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Admin Navbar */}
-      <nav className="fixed top-0 left-0 right-0 h-16 bg-white border-b z-30">
-        <div className="flex items-center justify-between h-full px-6">
-          <div className="flex items-center gap-4">
-            <Link 
-              href="/" 
-              className="flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              <span className="text-sm font-medium">Back to Store</span>
-            </Link>
-            <div className="w-px h-6 bg-gray-200" />
-            <h1 className="text-lg font-bold text-gray-900">Admin Panel</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-white text-xs font-bold">
-              {session.user.name?.charAt(0) || "A"}
-            </div>
-          </div>
-        </div>
-      </nav>
-
+    <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <aside className="fixed top-16 left-0 bottom-0 w-64 bg-white border-r overflow-y-auto">
-        <nav className="p-4 space-y-1">
+      <aside className="fixed top-0 left-0 bottom-0 w-64 bg-white border-r z-30 flex flex-col">
+        {/* Admin Header */}
+        <div className="flex items-center gap-3 px-6 h-16 border-b shrink-0">
+          <Link 
+            href="/" 
+            className="flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span className="text-sm font-medium">Back to Store</span>
+          </Link>
+          <div className="w-px h-6 bg-gray-200" />
+          <h1 className="text-lg font-bold text-gray-900">Admin</h1>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {sidebarLinks.map((link) => (
             <Link
               key={link.href}
@@ -67,14 +59,31 @@ export default async function AdminLayout({
             </Link>
           ))}
         </nav>
+
+        {/* User info at bottom */}
+        <div className="p-4 border-t shrink-0">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
+              {session.user.name?.charAt(0) || "A"}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-gray-900 truncate">
+                {session.user.name || "Admin"}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {session.user.email}
+              </p>
+            </div>
+          </div>
+        </div>
       </aside>
 
       {/* Main Content */}
-      <main className="ml-64 pt-16">
-        <div className="p-6">
+      <div className="flex-1 ml-64">
+        <main className="min-h-screen p-6">
           {children}
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

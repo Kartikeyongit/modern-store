@@ -20,12 +20,25 @@ const paymentColors: Record<string, string> = {
   Refunded: "bg-red-100 text-red-700",
 };
 
-export function AdminOrdersClient({ initialOrders }: { initialOrders: any[] }) {
+interface Order {
+  id: string;
+  status: string | null;
+  paymentStatus: string | null;
+  paymentMethod: string | null;
+  trackingNumber: string | null;
+  carrier: string | null;
+  total: number | null;
+  createdAt: Date | null;
+  user?: { name?: string | null; email?: string | null } | null;
+  items?: { id: string }[] | null;
+}
+
+export function AdminOrdersClient({ initialOrders }: { initialOrders: Order[] }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [editingOrderId, setEditingOrderId] = useState<string | null>(null);
-  const [orders, setOrders] = useState<any[]>(initialOrders);
+  const [orders, setOrders] = useState<Order[]>(initialOrders);
+  const [trackingDraft, setTrackingDraft] = useState<Record<string, { trackingNumber: string; carrier: string }>>({});
 
   const filteredOrders = orders.filter((order) => {
     const orderId = order.id?.slice(0, 8) || "";
@@ -71,6 +84,27 @@ export function AdminOrdersClient({ initialOrders }: { initialOrders: any[] }) {
       });
     } catch (error) {
       console.error("Failed to update payment:", error);
+      window.location.reload();
+    }
+  };
+
+  const updateTracking = async (orderId: string) => {
+    const draft = trackingDraft[orderId];
+    if (!draft) return;
+
+    setOrders(orders.map(o =>
+      o.id === orderId ? { ...o, trackingNumber: draft.trackingNumber, carrier: draft.carrier } : o
+    ));
+
+    try {
+      await fetch("/api/admin/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, trackingNumber: draft.trackingNumber, carrier: draft.carrier }),
+      });
+      setTrackingDraft((prev) => { const next = { ...prev }; delete next[orderId]; return next; });
+    } catch (error) {
+      console.error("Failed to update tracking:", error);
       window.location.reload();
     }
   };
@@ -160,6 +194,7 @@ export function AdminOrdersClient({ initialOrders }: { initialOrders: any[] }) {
                 <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">Total</th>
                 <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">Status</th>
                 <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">Payment</th>
+                <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">Method</th>
                 <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">Date</th>
                 <th className="text-right text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">Actions</th>
               </tr>
@@ -194,19 +229,60 @@ export function AdminOrdersClient({ initialOrders }: { initialOrders: any[] }) {
                       ${(order.total || 0).toFixed(2)}
                     </td>
                     <td className="px-6 py-4">
-                    <select
-                        value={order.status || "Pending"}
-                        onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                        className={`text-xs font-medium rounded-full px-2.5 py-0.5 border-0 cursor-pointer ${
-                        statusColors[order.status || "Pending"]
-                        }`}
-                    >
-                        <option value="Pending">Pending</option>
-                        <option value="Processing">Processing</option>
-                        <option value="Shipped">Shipped</option>
-                        <option value="Delivered">Delivered</option>
-                        <option value="Cancelled">Cancelled</option>
-                    </select>
+                      <select
+                          value={order.status || "Pending"}
+                          onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                          className={`text-xs font-medium rounded-full px-2.5 py-0.5 border-0 cursor-pointer ${
+                          statusColors[order.status || "Pending"]
+                          }`}
+                      >
+                          <option value="Pending">Pending</option>
+                          <option value="Processing">Processing</option>
+                          <option value="Shipped">Shipped</option>
+                          <option value="Delivered">Delivered</option>
+                          <option value="Cancelled">Cancelled</option>
+                      </select>
+                      {(order.status === "Shipped" || order.status === "Delivered") && (
+                        <div className="mt-2 space-y-1">
+                          {order.trackingNumber || order.carrier ? (
+                            <div className="text-[11px] text-gray-500 leading-tight">
+                              <p className="font-medium text-gray-700">{order.carrier || "Carrier"}</p>
+                              <p className="truncate max-w-[140px]">{order.trackingNumber}</p>
+                            </div>
+                          ) : (
+                            <div className="flex gap-1">
+                              <input
+                                placeholder="Carrier"
+                                value={trackingDraft[order.id]?.carrier ?? ""}
+                                onChange={(e) =>
+                                  setTrackingDraft((prev) => ({
+                                    ...prev,
+                                    [order.id]: { ...prev[order.id], carrier: e.target.value, trackingNumber: prev[order.id]?.trackingNumber ?? "" },
+                                  }))
+                                }
+                                className="w-16 text-[11px] px-1 py-0.5 border rounded"
+                              />
+                              <input
+                                placeholder="Tracking #"
+                                value={trackingDraft[order.id]?.trackingNumber ?? ""}
+                                onChange={(e) =>
+                                  setTrackingDraft((prev) => ({
+                                    ...prev,
+                                    [order.id]: { ...prev[order.id], trackingNumber: e.target.value, carrier: prev[order.id]?.carrier ?? "" },
+                                  }))
+                                }
+                                className="w-20 text-[11px] px-1 py-0.5 border rounded"
+                              />
+                              <button
+                                onClick={() => updateTracking(order.id)}
+                                className="text-[11px] text-white bg-black px-1.5 py-0.5 rounded hover:bg-gray-800"
+                              >
+                                Save
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                     <select
@@ -220,6 +296,9 @@ export function AdminOrdersClient({ initialOrders }: { initialOrders: any[] }) {
                         <option value="Paid">Paid</option>
                         <option value="Refunded">Refunded</option>
                     </select>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {order.paymentMethod === "cod" ? "COD" : "Stripe"}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
                       {order.createdAt

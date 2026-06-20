@@ -14,7 +14,7 @@ export async function DELETE(
   await db.delete(addresses).where(
     and(
       eq(addresses.id, params.id),
-      eq(addresses.userId, (session.user as any).id)
+      eq(addresses.userId, (session.user as { id: string }).id)
     )
   );
 
@@ -29,7 +29,7 @@ export async function PUT(
   if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const data = await req.json();
-  const userId = (session.user as any).id;
+  const userId = (session.user as { id: string }).id;
 
   if (data.isDefault) {
     await db.update(addresses)

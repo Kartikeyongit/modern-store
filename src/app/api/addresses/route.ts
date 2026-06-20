@@ -11,7 +11,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const userId = (session.user as any).id;
+  const userId = (session.user as { id: string }).id;
   const userAddresses = await db.query.addresses.findMany({
     where: eq(addresses.userId, userId),
   });
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
   }
 
   const data = await req.json();
-  const userId = (session.user as any).id;
+  const userId = (session.user as { id: string }).id;
 
   // If this is set as default, remove default from others
   if (data.isDefault) {

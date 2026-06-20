@@ -26,9 +26,6 @@ export function ProductCard({ product }: { product: Product }) {
   const parsedColors = typeof product.colors === 'string' 
     ? JSON.parse(product.colors) 
     : product.colors;
-  const parsedSizes = typeof product.sizes === 'string' 
-    ? JSON.parse(product.sizes) 
-    : product.sizes;
 
   const [selectedColor, setSelectedColor] = useState(parsedColors?.[0]?.hex);
   const addItem = useCartStore((state) => state.addItem);
@@ -49,7 +46,17 @@ export function ProductCard({ product }: { product: Product }) {
     >
       <div className="relative aspect-[3/4] overflow-hidden rounded-2xl bg-gray-100">
         {/* Badges */}
-        <div className="absolute top-4 left-4 z-10 flex gap-2">
+        <div className="absolute top-4 left-4 z-10 flex flex-wrap gap-2">
+          {product.stock === 0 && (
+            <Badge className="bg-red-500 text-white border-0">
+              Out of Stock
+            </Badge>
+          )}
+          {product.stock > 0 && product.stock <= 5 && (
+            <Badge className="bg-amber-500 text-white border-0">
+              Low Stock
+            </Badge>
+          )}
           {product.isNew && (
             <Badge className="bg-gradient-to-r from-black to-gray-400 text-white border-0">
               New
@@ -117,20 +124,22 @@ export function ProductCard({ product }: { product: Product }) {
         </div>
 
         {/* Add to Cart Button - Bottom */}
-        <div
-          className={cn(
-            "absolute bottom-4 left-4 right-4 transition-all duration-300",
-            isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-          )}
-        >
-          <Button
-            onClick={() => addItem(product)}
-            className="w-full bg-white/90 backdrop-blur-sm hover:bg-white text-gray-900 shadow-lg border border-white/20"
+        {product.stock !== 0 && (
+          <div
+            className={cn(
+              "absolute bottom-4 left-4 right-4 transition-all duration-300",
+              isHovered ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+            )}
           >
-            <ShoppingBag className="h-4 w-4 mr-2" />
-            Add to Cart
-          </Button>
-        </div>
+            <Button
+              onClick={() => addItem(product)}
+              className="w-full bg-white/90 backdrop-blur-sm hover:bg-white text-gray-900 shadow-lg border border-white/20"
+            >
+              <ShoppingBag className="h-4 w-4 mr-2" />
+              Add to Cart
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Product Info */}
@@ -152,7 +161,7 @@ export function ProductCard({ product }: { product: Product }) {
         {/* Color Swatches */}
         {parsedColors && (
           <div className="flex gap-1.5 mt-1">
-            {parsedColors.map((color: any) => (
+            {parsedColors.map((color: { name: string; hex: string }) => (
               <button
                 key={color.hex}
                 onClick={() => setSelectedColor(color.hex)}

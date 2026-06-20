@@ -18,7 +18,6 @@ import {
 } from "recharts";
 
 const COLORS = ["#000000", "#374151", "#6B7280", "#9CA3AF", "#D1D5DB"];
-const CHART_COLORS = ["#000000", "#374151"];
 
 interface ChartData {
   monthlyData: { name: string; revenue: number; orders: number }[];

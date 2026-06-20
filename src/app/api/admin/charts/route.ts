@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { orders } from "@/db/schema";
-import { sql } from "drizzle-orm";
-
 export async function GET() {
   try {
     const allOrders = await db.query.orders.findMany({

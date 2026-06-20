@@ -64,66 +64,79 @@ export function CartDrawer() {
               <>
                 <ScrollArea className="flex-1 p-6">
                   <div className="space-y-6">
-                    {items.map((item) => (
-                      <motion.div
-                        key={item.product.id}
-                        layout
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -20 }}
-                        className="flex gap-4"
-                      >
-                        <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                          <Image
-                            src={item.product.images[0]}
-                            alt={item.product.name}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-sm font-medium text-gray-900 truncate">
-                            {item.product.name}
-                          </h4>
-                          <p className="text-sm font-semibold text-gray-900 mt-1">
-                            ${item.product.price}
-                          </p>
-                          <div className="flex items-center gap-3 mt-2">
-                            <button
-                              onClick={() =>
-                                updateQuantity(
-                                  item.product.id,
-                                  item.quantity - 1
-                                )
-                              }
-                              className="p-1 rounded-md hover:bg-gray-100 transition-colors"
-                            >
-                              <Minus className="h-3 w-3" />
-                            </button>
-                            <span className="text-sm font-medium">
-                              {item.quantity}
-                            </span>
-                            <button
-                              onClick={() =>
-                                updateQuantity(
-                                  item.product.id,
-                                  item.quantity + 1
-                                )
-                              }
-                              className="p-1 rounded-md hover:bg-gray-100 transition-colors"
-                            >
-                              <Plus className="h-3 w-3" />
-                            </button>
-                            <button
-                              onClick={() => removeItem(item.product.id)}
-                              className="p-1 rounded-md hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors ml-auto"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
+                    {items.map((item) => {
+                      const parsedColors = item.product.colors && typeof item.product.colors === 'string'
+                        ? JSON.parse(item.product.colors)
+                        : item.product.colors;
+                      const colorName = parsedColors?.find((c: { hex: string; name: string }) => c.hex === item.selectedColor)?.name || item.selectedColor;
+                      return (
+                        <motion.div
+                          key={item.key}
+                          layout
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          className="flex gap-4"
+                        >
+                          <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                            <Image
+                              src={item.product.images[0]}
+                              alt={item.product.name}
+                              fill
+                              className="object-cover"
+                            />
                           </div>
-                        </div>
-                      </motion.div>
-                    ))}
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-sm font-medium text-gray-900 truncate">
+                              {item.product.name}
+                            </h4>
+                            {(item.selectedColor || item.selectedSize) && (
+                              <p className="text-xs text-gray-400 mt-0.5">
+                                {colorName && `${colorName}`}
+                                {colorName && item.selectedSize && " / "}
+                                {item.selectedSize && `Size ${item.selectedSize}`}
+                              </p>
+                            )}
+                            <p className="text-sm font-semibold text-gray-900 mt-1">
+                              ${item.product.price}
+                            </p>
+                            <div className="flex items-center gap-3 mt-2">
+                              <button
+                                onClick={() =>
+                                  updateQuantity(
+                                    item.key,
+                                    item.quantity - 1
+                                  )
+                                }
+                                className="p-1 rounded-md hover:bg-gray-100 transition-colors"
+                              >
+                                <Minus className="h-3 w-3" />
+                              </button>
+                              <span className="text-sm font-medium">
+                                {item.quantity}
+                              </span>
+                              <button
+                                onClick={() =>
+                                  updateQuantity(
+                                    item.key,
+                                    item.quantity + 1
+                                  )
+                                }
+                                className="p-1 rounded-md hover:bg-gray-100 transition-colors"
+                              >
+                                <Plus className="h-3 w-3" />
+                              </button>
+                              <button
+                                onClick={() => removeItem(item.key)}
+                                className="p-1 rounded-md hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors ml-auto"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
                   </div>
                 </ScrollArea>
 

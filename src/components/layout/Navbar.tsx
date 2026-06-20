@@ -5,12 +5,19 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingBag, Search, Menu, X, Heart, User } from "lucide-react";
+import { ShoppingBag, Search, Menu, X, Heart, User, LogOut, LayoutDashboard, ChevronDown } from "lucide-react";
 import { useSearchStore } from "@/store/search";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { useCartStore } from "@/store/cart";
 
 const navLinks = [
@@ -21,73 +28,59 @@ const navLinks = [
 ];
 
 export function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-  const totalItems = useCartStore((state) => state.totalItems);
+  const [isVisible, setIsVisible] = useState(true);
+  const cartItems = useCartStore((state) => state.items);
+  const itemsCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const openCart = useCartStore((state) => state.openCart);
   const pathname = usePathname();
   const { data: session } = useSession();
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
-  const isHomepage = pathname === "/";
   const isAdminPage = pathname.startsWith("/admin");
-  const shouldShowDark = !isHomepage || isScrolled;
+  const shouldShowDark = true;
 
-  const searchStore = useSearchStore();
-  const router = useRouter();
+  const searchQuery = useSearchStore((state) => state.query);
+  const searchResults = useSearchStore((state) => state.results);
+  const searchIsOpen = useSearchStore((state) => state.isOpen);
+  const setSearchQuery = useSearchStore((state) => state.setQuery);
+  const setSearchOpen = useSearchStore((state) => state.setOpen);
+  const setSearchResults = useSearchStore((state) => state.setResults);
   const searchRef = useRef<HTMLDivElement>(null);
 
   // Close search on click outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
-        searchStore.setOpen(false);
+        setSearchOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [setSearchOpen]);
 
   // Debounced search
   useEffect(() => {
-    if (searchStore.query.length < 2) {
-      searchStore.setResults([]);
+    if (searchQuery.length < 2) {
+      setSearchResults([]);
       return;
     }
 
     const timer = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(searchStore.query)}`);
+        const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
         const data = await res.json();
-        searchStore.setResults(data);
+        setSearchResults(data);
       } catch (error) {
         console.error("Search failed:", error);
       }
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchStore.query]);
+  }, [searchQuery, setSearchResults]);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      setIsScrolled(scrollY > 20);
-    
-      if (isHomepage) {
-        setIsVisible(scrollY > window.innerHeight * 0.5);
-      } else {
-        setIsVisible(true);
-      }
-    };
-  
-    if (!isHomepage) {
-      setIsVisible(true);
-    }
-  
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [isHomepage]);
+    setIsVisible(true);
+  }, []);
 
   // Hide navbar on admin pages
   if (isAdminPage) return null;
@@ -95,7 +88,6 @@ export function Navbar() {
   return (
     <>
       <motion.nav
-        initial={{ y: -100 }}
         animate={{ y: isVisible ? 0 : -100 }}
         transition={{ duration: 0.4, ease: "easeInOut" }}
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
@@ -137,8 +129,8 @@ export function Navbar() {
                   variant="ghost"
                   size="icon"
                   onClick={() => {
-                    searchStore.setOpen(!searchStore.isOpen);
-                    if (!searchStore.isOpen) {
+                    setSearchOpen(!searchIsOpen);
+                    if (!searchIsOpen) {
                       setTimeout(() => {
                         const input = document.getElementById("nav-search-input");
                         input?.focus();
@@ -151,7 +143,7 @@ export function Navbar() {
                 </Button>
 
                 {/* Search Dropdown */}
-                {searchStore.isOpen && (
+                {searchIsOpen && (
                   <div className="absolute right-0 top-full mt-2 w-96 bg-white rounded-xl shadow-2xl border z-50 overflow-hidden">
                     <div className="p-3">
                       <div className="relative">
@@ -160,10 +152,10 @@ export function Navbar() {
                           id="nav-search-input"
                           type="text"
                           placeholder="Search products..."
-                          value={searchStore.query}
+                          value={searchQuery}
                           onChange={(e) => {
-                            searchStore.setQuery(e.target.value);
-                            searchStore.setOpen(true);
+                            setSearchQuery(e.target.value);
+                            setSearchOpen(true);
                           }}
                           className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                         />
@@ -171,26 +163,28 @@ export function Navbar() {
                     </div>
 
                     {/* Results */}
-                    {searchStore.query.length >= 2 && (
+                    {searchQuery.length >= 2 && (
                       <div className="border-t">
-                        {searchStore.results.length > 0 ? (
+                        {searchResults.length > 0 ? (
                           <>
-                            {searchStore.results.map((product: any) => (
+                            {searchResults.map((product) => (
                               <Link
                                 key={product.id}
                                 href={`/products/${product.id}`}
                                 onClick={() => {
-                                  searchStore.setOpen(false);
-                                  searchStore.setQuery("");
+                                  setSearchOpen(false);
+                                  setSearchQuery("");
                                 }}
                                 className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
                               >
-                                <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                                <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 relative">
                                   {product.images?.[0] && (
-                                    <img
+                                    <Image
                                       src={product.images[0]}
                                       alt={product.name}
-                                      className="w-full h-full object-cover"
+                                      fill
+                                      className="object-cover"
+                                      sizes="40px"
                                     />
                                   )}
                                 </div>
@@ -205,10 +199,10 @@ export function Navbar() {
                               </Link>
                             ))}
                             <Link
-                              href={`/shop?search=${encodeURIComponent(searchStore.query)}`}
+                              href={`/shop?search=${encodeURIComponent(searchQuery)}`}
                               onClick={() => {
-                                searchStore.setOpen(false);
-                                searchStore.setQuery("");
+                                setSearchOpen(false);
+                                setSearchQuery("");
                               }}
                               className="block text-center text-sm font-medium text-black hover:bg-gray-50 py-3 border-t"
                             >
@@ -237,82 +231,66 @@ export function Navbar() {
               </Link>
 
               {/* User Menu */}
-              <div className="relative">
-                {session ? (
-                  <>
-                    <button
-                      onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                      className={`flex items-center justify-center w-8 h-8 bg-gray-800 rounded-full flex items-center justify-center text-white text-xs font-bold`}
-                    >
-                      {session.user?.name?.charAt(0) || "U"}
+              {session ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex items-center gap-1 rounded-full focus:outline-none focus:ring-2 focus:ring-gray-300">
+                      <Avatar className="w-8 h-8">
+                        <AvatarFallback className="bg-gray-800 text-white text-xs font-bold">
+                          {session.user?.name?.charAt(0) || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <ChevronDown className="h-3 w-3 text-gray-500" />
                     </button>
-
-                    {/* Custom Dropdown */}
-                    {isUserMenuOpen && (
-                      <>
-                        {/* Backdrop to capture clicks outside */}
-                        <div
-                          className="fixed inset-0 z-40"
-                          onClick={() => setIsUserMenuOpen(false)}
-                        />
-                        
-                        {/* Dropdown Content */}
-                        <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-2xl border z-50 overflow-hidden">
-                          <div className="px-4 py-3 border-b">
-                            <p className="text-sm font-medium text-gray-900 truncate">
-                              {session.user?.name || "User"}
-                            </p>
-                            <p className="text-xs text-gray-500 truncate mt-0.5">
-                              {session.user?.email}
-                            </p>
-                          </div>
-                            
-                          <div className="py-1">
-                            <Link
-                              href="/account"
-                              onClick={() => setIsUserMenuOpen(false)}
-                              className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                            >
-                              <User className="h-4 w-4 mr-3 text-gray-400" />
-                              My Account
-                            </Link>
-                            <Link
-                              href="/account/orders"
-                              onClick={() => setIsUserMenuOpen(false)}
-                              className="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                            >
-                              <ShoppingBag className="h-4 w-4 mr-3 text-gray-400" />
-                              Orders
-                            </Link>
-                          </div>
-                            
-                          <div className="border-t py-1">
-                            <button
-                              onClick={() => {
-                              setIsUserMenuOpen(false);
-                              signOut();
-                              }}
-                              className="flex items-center w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                            >
-                              Sign Out
-                            </button>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </>
-                ) : (
-                  <Link href="/auth/login">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className={shouldShowDark ? "text-gray-700" : "text-black"}
-                    >
-                      <User className="h-5 w-5" />
-                    </Button>
-                  </Link>
-                )}
-              </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" sideOffset={8} className="w-56">
+                    <DropdownMenuLabel className="font-normal">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {session.user?.name || "User"}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate mt-0.5 font-normal">
+                        {session.user?.email}
+                      </p>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/account" className="cursor-pointer">
+                        <User className="h-4 w-4" />
+                        My Account
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/account/orders" className="cursor-pointer">
+                        <ShoppingBag className="h-4 w-4" />
+                        Orders
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin" className="cursor-pointer">
+                        <LayoutDashboard className="h-4 w-4" />
+                        Admin View
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem variant="destructive" asChild>
+                      <button onClick={() => signOut()} className="cursor-pointer w-full">
+                        <LogOut className="h-4 w-4" />
+                        Sign Out
+                      </button>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Link href="/auth/login">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={shouldShowDark ? "text-gray-700" : "text-black"}
+                  >
+                    <User className="h-5 w-5" />
+                  </Button>
+                </Link>
+              )}
 
               <Button
                 variant="ghost"
@@ -321,13 +299,13 @@ export function Navbar() {
                 className={`relative ${shouldShowDark ? "text-gray-700" : "text-black"}`}
               >
                 <ShoppingBag className="h-5 w-5" />
-                {totalItems() > 0 && (
+                {itemsCount > 0 && (
                   <motion.span
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center rounded-full bg-gray-800 text-white text-xs font-bold"
                   >
-                    {totalItems()}
+                    {itemsCount}
                   </motion.span>
                 )}
               </Button>
@@ -368,6 +346,49 @@ export function Navbar() {
                   </Link>
                 ))}
               </div>
+
+              {session && (
+                <>
+                  <hr className="border-gray-200" />
+                  <div className="space-y-3 pt-2">
+                    <p className="text-xs text-gray-400 uppercase tracking-wider font-medium">Account</p>
+                    <Link
+                      href="/account"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-3 text-base text-gray-700 hover:text-black transition-colors"
+                    >
+                      <User className="h-5 w-5 text-gray-400" />
+                      My Account
+                    </Link>
+                    <Link
+                      href="/account/orders"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-3 text-base text-gray-700 hover:text-black transition-colors"
+                    >
+                      <ShoppingBag className="h-5 w-5 text-gray-400" />
+                      Orders
+                    </Link>
+                    <Link
+                      href="/admin"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center gap-3 text-base text-gray-700 hover:text-black transition-colors"
+                    >
+                      <LayoutDashboard className="h-5 w-5 text-gray-400" />
+                      Admin View
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        signOut();
+                      }}
+                      className="flex items-center gap-3 text-base text-red-600 hover:text-red-700 transition-colors"
+                    >
+                      <LogOut className="h-5 w-5 text-red-400" />
+                      Sign Out
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </motion.div>
         )}

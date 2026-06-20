@@ -23,6 +23,7 @@ export async function PUT(
         compareAtPrice: data.compareAtPrice || null,
         colors: data.colors ? JSON.stringify(data.colors) : null,
         sizes: data.sizes ? JSON.stringify(data.sizes) : null,
+        details: data.details ? JSON.stringify(data.details) : null,
         updatedAt: new Date(),
       })
       .where(eq(products.id, params.id));
@@ -45,7 +46,7 @@ export async function DELETE(
   try {
     await db.delete(products).where(eq(products.id, params.id));
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to delete product" }, { status: 500 });
   }
 }

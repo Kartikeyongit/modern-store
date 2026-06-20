@@ -44,6 +44,7 @@ export const products = sqliteTable("products", {
   status: text("status").default("Active"),
   colors: text("colors"), // JSON string of [{name, hex}]
   sizes: text("sizes"), // JSON string of ["S","M","L","XL"]
+  details: text("details"), // JSON string of [{label, value}]
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
   updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
@@ -55,6 +56,9 @@ export const orders = sqliteTable("orders", {
   total: real("total").notNull(),
   shippingAddress: text("shipping_address"),
   paymentStatus: text("payment_status").default("Pending"),
+  paymentMethod: text("payment_method").default("stripe"),
+  trackingNumber: text("tracking_number"),
+  carrier: text("carrier"),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
@@ -64,6 +68,18 @@ export const orderItems = sqliteTable("order_items", {
   productId: text("product_id").references(() => products.id),
   quantity: integer("quantity").notNull(),
   unitPrice: real("unit_price").notNull(),
+  selectedColor: text("selected_color"),
+  selectedSize: text("selected_size"),
+});
+
+export const reviews = sqliteTable("reviews", {
+  id: text("id").primaryKey(),
+  productId: text("product_id").notNull().references(() => products.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  rating: integer("rating").notNull(),
+  title: text("title"),
+  body: text("body").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
 export const accounts = sqliteTable("accounts", {
@@ -94,6 +110,18 @@ export const verificationTokens = sqliteTable("verification_tokens", {
   expires: integer("expires", { mode: "timestamp" }).notNull(),
 });
 
+export const storeSettings = sqliteTable("store_settings", {
+  id: text("id").primaryKey(),
+  storeName: text("store_name").notNull().default("Modern Store"),
+  supportEmail: text("support_email").notNull().default("support@modernstore.com"),
+  shippingThreshold: real("shipping_threshold").notNull().default(100),
+  shippingRate: real("shipping_rate").notNull().default(9.99),
+  taxRate: real("tax_rate").notNull().default(0.08),
+  currency: text("currency").notNull().default("USD"),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
 import { relations } from "drizzle-orm";
 
 export const ordersRelations = relations(orders, ({ many, one }) => ({
@@ -112,5 +140,21 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
   product: one(products, {
     fields: [orderItems.productId],
     references: [products.id],
+  }),
+}));
+
+export const usersRelations = relations(users, ({ many }) => ({
+  orders: many(orders),
+  reviews: many(reviews),
+}));
+
+export const reviewsRelations = relations(reviews, ({ one }) => ({
+  product: one(products, {
+    fields: [reviews.productId],
+    references: [products.id],
+  }),
+  user: one(users, {
+    fields: [reviews.userId],
+    references: [users.id],
   }),
 }));

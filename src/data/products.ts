@@ -15,6 +15,7 @@ export const products: Product[] = [
     category: "Accessories",
     rating: 4.8,
     reviewCount: 234,
+    stock: 50,
     isSale: true,
     colors: [
       { name: "Black", hex: "#1a1a1a" },
@@ -34,6 +35,7 @@ export const products: Product[] = [
     category: "Accessories",
     rating: 4.9,
     reviewCount: 189,
+    stock: 50,
     isNew: true,
     colors: [
       { name: "Charcoal", hex: "#2d3436" },
@@ -53,6 +55,7 @@ export const products: Product[] = [
     category: "Electronics",
     rating: 4.7,
     reviewCount: 456,
+    stock: 50,
     isSale: true,
     colors: [
       { name: "White", hex: "#ffffff" },
@@ -71,6 +74,7 @@ export const products: Product[] = [
     category: "Accessories",
     rating: 4.6,
     reviewCount: 312,
+    stock: 50,
     colors: [
       { name: "Brown", hex: "#8B4513" },
       { name: "Black", hex: "#1a1a1a" },
@@ -90,6 +94,7 @@ export const products: Product[] = [
     category: "Electronics",
     rating: 4.5,
     reviewCount: 178,
+    stock: 50,
     isSale: true,
     colors: [
       { name: "White", hex: "#f5f5f5" },
@@ -108,6 +113,7 @@ export const products: Product[] = [
     category: "Accessories",
     rating: 4.8,
     reviewCount: 267,
+    stock: 50,
     isNew: true,
   },
   {
@@ -122,6 +128,7 @@ export const products: Product[] = [
     category: "Electronics",
     rating: 4.9,
     reviewCount: 523,
+    stock: 50,
   },
   {
     id: "8",
@@ -136,6 +143,7 @@ export const products: Product[] = [
     category: "Accessories",
     rating: 4.7,
     reviewCount: 345,
+    stock: 50,
     isSale: true,
   },
 ];

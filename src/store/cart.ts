@@ -1,7 +1,12 @@
 import { create } from "zustand";
 import { Product } from "@/types/product";
 
-interface CartItem {
+function itemKey(productId: string, color?: string, size?: string) {
+  return `${productId}::${color || ""}::${size || ""}`;
+}
+
+export interface CartItem {
+  key: string;
   product: Product;
   quantity: number;
   selectedColor?: string;
@@ -12,8 +17,8 @@ interface CartStore {
   items: CartItem[];
   isOpen: boolean;
   addItem: (product: Product, color?: string, size?: string, qty?: number) => void;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  removeItem: (key: string) => void;
+  updateQuantity: (key: string, quantity: number) => void;
   toggleCart: () => void;
   openCart: () => void;
   closeCart: () => void;
@@ -26,41 +31,44 @@ export const useCartStore = create<CartStore>((set, get) => ({
   isOpen: false,
 
   addItem: (product, color, size, qty = 1) => {
+    const key = itemKey(product.id, color, size);
+    const available = product.stock ?? 99;
     set((state) => {
-      const existingItem = state.items.find(
-        (item) => item.product.id === product.id
-      );
+      const existingItem = state.items.find((item) => item.key === key);
+      const currentQty = existingItem ? existingItem.quantity : 0;
+      const newQty = Math.min(currentQty + qty, available);
+      if (newQty <= currentQty) return state;
       if (existingItem) {
         return {
           items: state.items.map((item) =>
-            item.product.id === product.id
-              ? { ...item, quantity: item.quantity + qty }
+            item.key === key
+              ? { ...item, quantity: newQty }
               : item
           ),
           isOpen: true,
         };
       }
       return {
-        items: [...state.items, { product, quantity: qty, selectedColor: color, selectedSize: size }],
+        items: [...state.items, { key, product, quantity: newQty, selectedColor: color, selectedSize: size }],
         isOpen: true,
       };
     });
   },
 
-  removeItem: (productId) => {
+  removeItem: (key) => {
     set((state) => ({
-      items: state.items.filter((item) => item.product.id !== productId),
+      items: state.items.filter((item) => item.key !== key),
     }));
   },
 
-  updateQuantity: (productId, quantity) => {
+  updateQuantity: (key, quantity) => {
     if (quantity <= 0) {
-      get().removeItem(productId);
+      get().removeItem(key);
       return;
     }
     set((state) => ({
       items: state.items.map((item) =>
-        item.product.id === productId ? { ...item, quantity } : item
+        item.key === key ? { ...item, quantity } : item
       ),
     }));
   },

@@ -2,12 +2,12 @@
 
 import { UploadButton } from "@uploadthing/react";
 import type { OurFileRouter } from "@/app/api/uploadthing/core";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import type { Product } from "@/types/product";
 import {
   Plus,
   Search,
@@ -16,11 +16,10 @@ import {
   MoreHorizontal,
   Eye,
 } from "lucide-react";
-import { X, Upload, ImagePlus } from "lucide-react";
+import { X } from "lucide-react";
 
-export function AdminProductsClient({ initialProducts }: { initialProducts: any[] }) {
+export function AdminProductsClient({ initialProducts }: { initialProducts: Product[] }) {
   const [allProducts, setAllProducts] = useState(initialProducts);
-  const [loading, setLoading] = useState(true);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -37,8 +36,9 @@ export function AdminProductsClient({ initialProducts }: { initialProducts: any[
   });
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [newProductDetails, setNewProductDetails] = useState<{ label: string; value: string }[]>([]);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [editForm, setEditForm] = useState({
     name: "",
     category: "Accessories",
@@ -49,15 +49,16 @@ export function AdminProductsClient({ initialProducts }: { initialProducts: any[
   });
   const [editUploadedImages, setEditUploadedImages] = useState<string[]>([]);
   const [isEditUploading, setIsEditUploading] = useState(false);
+  const [editFormDetails, setEditFormDetails] = useState<{ label: string; value: string }[]>([]);
 
   const filteredProducts = allProducts.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === "All" || product.category === selectedCategory;
-    const matchesStatus = selectedStatus === "All" || (product as any).status === selectedStatus;
+    const matchesStatus = selectedStatus === "All" || (product as Product & { status?: string }).status === selectedStatus;
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
-  const categories = ["All", ...new Set(allProducts.map((p) => p.category))];
+  const categories = ["All", ...Array.from(new Set(allProducts.map((p) => p.category)))];
   const statuses = ["All", "Active", "Draft"];
   
   const fetchProducts = async () => {
@@ -65,19 +66,11 @@ export function AdminProductsClient({ initialProducts }: { initialProducts: any[
       const res = await fetch("/api/products");
       const data = await res.json();
     
-      // Parse the images JSON string into an array
-      const parsedData = data.map((product: any) => ({
-        ...product,
-        images: typeof product.images === 'string' 
-          ? JSON.parse(product.images) 
-          : product.images,
-      }));
+      const parsedData = data as Product[];
     
       setAllProducts(parsedData);
     } catch (error) {
       console.error("Failed to fetch products:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -173,8 +166,8 @@ export function AdminProductsClient({ initialProducts }: { initialProducts: any[
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filteredProducts.map((product) => {
-                const status = (product as any).status || "Active";
-                const stock = (product as any).stock ?? 0;
+                const status = (product as Product & { status?: string }).status || "Active";
+                const stock = product.stock ?? 0;
                 return (
                   <tr key={product.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
@@ -245,13 +238,14 @@ export function AdminProductsClient({ initialProducts }: { initialProducts: any[
                                   category: product.category || "Accessories",
                                   price: String(product.price || ""),
                                   description: product.description || "",
-                                  stock: String(product.stock || ""),
+                                  stock: String(product.stock ?? ""),
                                   imageUrl: "",
                                 });
                                 setEditUploadedImages(
                                   Array.isArray(product.images) ? product.images : 
                                   typeof product.images === 'string' ? JSON.parse(product.images) : []
                                 );
+                                setEditFormDetails(Array.isArray((product as Product & { details?: { label: string; value: string }[] }).details) ? (product as Product & { details?: { label: string; value: string }[] }).details! : []);
                                 setShowEditModal(true);
                                 setOpenMenuId(null);
                               }}
@@ -361,6 +355,7 @@ export function AdminProductsClient({ initialProducts }: { initialProducts: any[
                         description: newProduct.description,
                         stock: parseInt(newProduct.stock) || 0,
                         images: images,
+                        details: newProductDetails.filter((d) => d.label && d.value),
                       }),
                     });
                     
@@ -369,6 +364,7 @@ export function AdminProductsClient({ initialProducts }: { initialProducts: any[
                     setShowAddModal(false);
                     setNewProduct({ name: "", category: "Accessories", price: "", description: "", stock: "", imageUrl: "" });
                     setUploadedImages([]);
+                    setNewProductDetails([]);
                     }
                 } catch (error) {
                     console.error("Failed to add product:", error);
@@ -460,6 +456,59 @@ export function AdminProductsClient({ initialProducts }: { initialProducts: any[
                     placeholder="Enter product description"
                     className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none"
                     />
+                </div>
+
+                {/* Product Details */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Product Details
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setNewProductDetails([...newProductDetails, { label: "", value: "" }])}
+                      className="text-xs text-black hover:text-gray-600 font-medium flex items-center gap-1"
+                    >
+                      <Plus className="h-3 w-3" /> Add Detail
+                    </button>
+                  </div>
+                  {newProductDetails.length === 0 ? (
+                    <p className="text-xs text-gray-400 mb-3">No details added yet. Click &quot;Add Detail&quot; to add specifications.</p>
+                  ) : (
+                    <div className="space-y-2 mb-3">
+                      {newProductDetails.map((detail, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <Input
+                            placeholder="Label (e.g. Material)"
+                            value={detail.label}
+                            onChange={(e) => {
+                              const updated = [...newProductDetails];
+                              updated[index] = { ...updated[index], label: e.target.value };
+                              setNewProductDetails(updated);
+                            }}
+                            className="h-9 text-sm"
+                          />
+                          <Input
+                            placeholder="Value (e.g. 100% Cotton)"
+                            value={detail.value}
+                            onChange={(e) => {
+                              const updated = [...newProductDetails];
+                              updated[index] = { ...updated[index], value: e.target.value };
+                              setNewProductDetails(updated);
+                            }}
+                            className="h-9 text-sm"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setNewProductDetails(newProductDetails.filter((_, i) => i !== index))}
+                            className="p-2 text-gray-400 hover:text-red-500 transition-colors shrink-0"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Image Upload */}
@@ -631,6 +680,7 @@ export function AdminProductsClient({ initialProducts }: { initialProducts: any[
                           description: editForm.description,
                           stock: parseInt(editForm.stock) || 0,
                           images: images,
+                          details: editFormDetails.filter((d) => d.label && d.value),
                         }),
                       });
 
@@ -639,6 +689,7 @@ export function AdminProductsClient({ initialProducts }: { initialProducts: any[
                         setShowEditModal(false);
                         setEditingProduct(null);
                         setEditUploadedImages([]);
+                        setEditFormDetails([]);
                       }
                     } catch (error) {
                       console.error("Failed to update product:", error);
@@ -730,6 +781,59 @@ export function AdminProductsClient({ initialProducts }: { initialProducts: any[
                       placeholder="Enter product description"
                       className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none"
                     />
+                  </div>
+
+                  {/* Product Details */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Product Details
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setEditFormDetails([...editFormDetails, { label: "", value: "" }])}
+                        className="text-xs text-black hover:text-gray-600 font-medium flex items-center gap-1"
+                      >
+                        <Plus className="h-3 w-3" /> Add Detail
+                      </button>
+                    </div>
+                    {editFormDetails.length === 0 ? (
+                      <p className="text-xs text-gray-400 mb-3">No details added yet. Click &quot;Add Detail&quot; to add specifications.</p>
+                    ) : (
+                      <div className="space-y-2 mb-3">
+                        {editFormDetails.map((detail, index) => (
+                          <div key={index} className="flex items-center gap-2">
+                            <Input
+                              placeholder="Label (e.g. Material)"
+                              value={detail.label}
+                              onChange={(e) => {
+                                const updated = [...editFormDetails];
+                                updated[index] = { ...updated[index], label: e.target.value };
+                                setEditFormDetails(updated);
+                              }}
+                              className="h-9 text-sm"
+                            />
+                            <Input
+                              placeholder="Value (e.g. 100% Cotton)"
+                              value={detail.value}
+                              onChange={(e) => {
+                                const updated = [...editFormDetails];
+                                updated[index] = { ...updated[index], value: e.target.value };
+                                setEditFormDetails(updated);
+                              }}
+                              className="h-9 text-sm"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setEditFormDetails(editFormDetails.filter((_, i) => i !== index))}
+                              className="p-2 text-gray-400 hover:text-red-500 transition-colors shrink-0"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Image Upload */}

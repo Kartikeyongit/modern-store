@@ -21,7 +21,23 @@ const statusColors: Record<string, string> = {
   Pending: "bg-yellow-100 text-yellow-700",
 };
 
-export function AdminDashboardClient({ stats }: { stats: any }) {
+interface RecentOrder {
+  id: string;
+  status: string | null;
+  total: number | null;
+  paymentStatus: string | null;
+  createdAt: Date | null;
+}
+
+interface DashboardStats {
+  totalRevenue: number;
+  totalOrders: number;
+  totalProducts: number;
+  totalCustomers: number;
+  recentOrders: RecentOrder[];
+}
+
+export function AdminDashboardClient({ stats }: { stats: DashboardStats }) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const statCards = [
     {
@@ -68,7 +84,7 @@ export function AdminDashboardClient({ stats }: { stats: any }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
-          <p className="text-gray-500 mt-1">Welcome back! Here's what's happening with your store.</p>
+          <p className="text-gray-500 mt-1">Welcome back! Here&apos;s what&apos;s happening with your store.</p>
         </div>
         <Button 
           variant="outline" 
@@ -129,16 +145,16 @@ export function AdminDashboardClient({ stats }: { stats: any }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {stats.recentOrders.map((order: any) => (
+              {stats.recentOrders.map((order) => (
                 <tr key={order.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 text-sm font-medium text-gray-700">{order.id.slice(0, 8)}...</td>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[order.status] || "bg-gray-100 text-gray-700"}`}>
-                      {order.status}
+                    <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[order.status ?? ""] || "bg-gray-100 text-gray-700"}`}>
+                      {order.status ?? "Pending"}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">${order.total.toFixed(2)}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{order.paymentStatus}</td>
+                  <td className="px-6 py-4 text-sm font-medium text-gray-900">${(order.total ?? 0).toFixed(2)}</td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{order.paymentStatus ?? "Pending"}</td>
                   <td className="px-6 py-4 text-sm text-gray-500">
                     {order.createdAt
                       ? new Date(order.createdAt).toLocaleDateString("en-US", {

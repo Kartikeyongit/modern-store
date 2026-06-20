@@ -17,25 +17,27 @@ export async function GET() {
       },
     });
     return NextResponse.json(allOrders);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 });
   }
 }
 
 export async function PATCH(req: Request) {
   try {
-    const { orderId, status, paymentStatus } = await req.json();
+    const { orderId, status, paymentStatus, trackingNumber, carrier } = await req.json();
     
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (status) updateData.status = status;
     if (paymentStatus) updateData.paymentStatus = paymentStatus;
+    if (trackingNumber !== undefined) updateData.trackingNumber = trackingNumber;
+    if (carrier !== undefined) updateData.carrier = carrier;
 
     await db.update(orders)
       .set(updateData)
       .where(eq(orders.id, orderId));
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
   }
 }
