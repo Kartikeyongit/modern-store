@@ -167,7 +167,7 @@ export function AdminOrdersClient({ initialOrders }: { initialOrders: Order[] })
               placeholder="Search orders by ID or customer..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="h-10 pl-10"
             />
           </div>
           <select
