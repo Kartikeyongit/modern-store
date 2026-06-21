@@ -4,9 +4,9 @@ import { Footer } from "@/components/layout/Footer";
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <Navbar />
+      <div className="print:hidden"><Navbar /></div>
       {children}
-      <Footer />
+      <div className="print:hidden"><Footer /></div>
     </>
   );
 }

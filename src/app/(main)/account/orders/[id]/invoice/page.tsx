@@ -87,7 +87,7 @@ export default async function InvoicePage({
   const tax = itemsTotal * taxRate;
 
   return (
-    <main className="min-h-screen bg-gray-100 pt-20 print:bg-white">
+    <main className="min-h-screen bg-gray-100 pt-20 print:min-h-0 print:bg-white">
       <style>{`
         @page { size: A4; margin: 20mm; }
         @media print {
