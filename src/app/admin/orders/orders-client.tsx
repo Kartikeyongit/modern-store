@@ -118,6 +118,40 @@ export function AdminOrdersClient({ initialOrders }: { initialOrders: Order[] })
     .filter((o) => o.paymentStatus === "Paid")
     .reduce((sum, o) => sum + (o.total || 0), 0);
 
+  const quote = (val: string | number) => `"${String(val).replace(/"/g, '""')}"`;
+
+  const exportCSV = () => {
+    const headers = ["Order ID", "Customer", "Email", "Items", "Total", "Status", "Payment", "Method", "Carrier", "Tracking", "Date"];
+    const rows = filteredOrders.map((order) => [
+      `#${order.id?.slice(0, 8).toUpperCase() || ""}`,
+      order.user?.name || "",
+      order.user?.email || "",
+      order.items?.length || 0,
+      (order.total ?? 0).toFixed(2),
+      order.status || "",
+      order.paymentStatus || "",
+      order.paymentMethod === "cod" ? "COD" : "Stripe",
+      order.carrier || "",
+      order.trackingNumber || "",
+      order.createdAt
+        ? new Date(order.createdAt).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          })
+        : "",
+    ]);
+
+    const csv = [headers.join(","), ...rows.map((r) => r.map(quote).join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `orders-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -131,7 +165,7 @@ export function AdminOrdersClient({ initialOrders }: { initialOrders: Order[] })
           <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
             Refresh
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={exportCSV}>
           <Download className="h-4 w-4 mr-2" />
             Export CSV
           </Button>
