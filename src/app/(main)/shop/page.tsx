@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { getProducts } from "@/lib/get-products";
 import { ShopPageClient } from "./shop-page-client";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export default async function ShopPage() {
   const allProducts = await getProducts();
