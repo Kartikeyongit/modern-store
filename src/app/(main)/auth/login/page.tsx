@@ -86,6 +86,28 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {/* Demo Account */}
+          <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 mb-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="text-sm">
+                <p className="font-medium text-gray-900 mb-1">Demo Account</p>
+                <p className="text-gray-500">demo@example.com</p>
+                <p className="text-gray-500">password123</p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setEmail("demo@example.com");
+                  setPassword("password123");
+                }}
+              >
+                Fill
+              </Button>
+            </div>
+          </div>
+
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>

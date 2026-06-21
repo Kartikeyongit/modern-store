@@ -171,6 +171,9 @@ export default function RegisterPage() {
               Sign in
             </Link>
           </p>
+          <p className="text-center text-xs text-gray-400 mt-3">
+            Demo: demo@example.com / password123
+          </p>
         </motion.div>
       </div>
     </main>
