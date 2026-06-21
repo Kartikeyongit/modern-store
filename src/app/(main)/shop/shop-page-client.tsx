@@ -13,6 +13,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ProductCard } from "@/components/product/ProductCard";
+import { ProductListItem } from "@/components/product/ProductListItem";
 import {
   Search,
   SlidersHorizontal,
@@ -304,7 +305,11 @@ export function ShopPageClient({ allProducts }: { allProducts: Product[] }) {
                       exit={{ opacity: 0, scale: 0.9 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <ProductCard product={product} />
+                      {viewMode === "grid" ? (
+                        <ProductCard product={product} />
+                      ) : (
+                        <ProductListItem product={product} />
+                      )}
                     </motion.div>
                   ))}
                 </AnimatePresence>
