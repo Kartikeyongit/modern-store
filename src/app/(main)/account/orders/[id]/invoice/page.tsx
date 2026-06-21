@@ -87,7 +87,7 @@ export default async function InvoicePage({
   const tax = itemsTotal * taxRate;
 
   return (
-    <main className="min-h-screen bg-gray-100 print:bg-white">
+    <main className="min-h-screen bg-gray-100 pt-20 print:bg-white">
       {/* Print button — hidden when printing */}
       <div className="max-w-3xl mx-auto px-4 py-6 print:hidden">
         <div className="flex items-center justify-between mb-6">

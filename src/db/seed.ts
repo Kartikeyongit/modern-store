@@ -1127,7 +1127,7 @@ async function seed() {
   await db.insert(storeSettings).values({
     id: "main",
     storeName: "Borrow",
-    supportEmail: "support@modernstore.com",
+    supportEmail: "support@borrow.com",
     shippingThreshold: 100,
     shippingRate: 9.99,
     taxRate: 0.08,

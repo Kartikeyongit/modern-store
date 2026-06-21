@@ -113,7 +113,7 @@ export const verificationTokens = sqliteTable("verification_tokens", {
 export const storeSettings = sqliteTable("store_settings", {
   id: text("id").primaryKey(),
   storeName: text("store_name").notNull().default("Borrow"),
-  supportEmail: text("support_email").notNull().default("support@modernstore.com"),
+  supportEmail: text("support_email").notNull().default("support@borrow.com"),
   shippingThreshold: real("shipping_threshold").notNull().default(100),
   shippingRate: real("shipping_rate").notNull().default(9.99),
   taxRate: real("tax_rate").notNull().default(0.08),

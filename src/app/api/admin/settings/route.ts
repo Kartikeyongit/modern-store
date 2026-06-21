@@ -34,7 +34,7 @@ export async function PUT(req: Request) {
     .update(storeSettings)
     .set({
       storeName: storeName ?? "Borrow",
-      supportEmail: supportEmail ?? "support@modernstore.com",
+      supportEmail: supportEmail ?? "support@borrow.com",
       shippingThreshold: shippingThreshold ?? 100,
       shippingRate: shippingRate ?? 9.99,
       taxRate: taxRate ?? 0.08,
