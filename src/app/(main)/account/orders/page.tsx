@@ -100,6 +100,13 @@ export default async function UserOrdersPage() {
                             })
                           : "Date unavailable"}
                       </p>
+                      {(order.status === "Shipped" || order.status === "Delivered") && (order.trackingNumber || order.carrier) && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          {order.carrier && <span>{order.carrier}</span>}
+                          {order.carrier && order.trackingNumber && <span> — </span>}
+                          {order.trackingNumber && <span>Track: {order.trackingNumber}</span>}
+                        </p>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge className={paymentColors[order.paymentStatus || ""] || ""}>
@@ -112,13 +119,6 @@ export default async function UserOrdersPage() {
                         {order.status || "Pending"}
                       </Badge>
                     </div>
-                    {(order.status === "Shipped" || order.status === "Delivered") && (order.trackingNumber || order.carrier) && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        {order.carrier && <span>{order.carrier}</span>}
-                        {order.carrier && order.trackingNumber && <span> — </span>}
-                        {order.trackingNumber && <span>Track: {order.trackingNumber}</span>}
-                      </p>
-                    )}
                   </div>
 
                   {/* Order Items with Product Images */}
