@@ -43,6 +43,8 @@ export function ShopPageClient({ allProducts }: { allProducts: Product[] }) {
   const [sortBy, setSortBy] = useState("featured");
   const [priceRange, setPriceRange] = useState({ min: 0, max: 500 });
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [showOnSale, setShowOnSale] = useState(false);
+  const [showNewArrivals, setShowNewArrivals] = useState(false);
 
   useEffect(() => {
     if (urlCategory) {
@@ -75,6 +77,16 @@ export function ShopPageClient({ allProducts }: { allProducts: Product[] }) {
       (p) => p.price >= priceRange.min && p.price <= priceRange.max
     );
 
+    // On Sale filter
+    if (showOnSale) {
+      result = result.filter((p) => p.isSale);
+    }
+
+    // New Arrivals filter
+    if (showNewArrivals) {
+      result = result.filter((p) => p.isNew);
+    }
+
     // Sort
     switch (sortBy) {
       case "newest":
@@ -94,13 +106,15 @@ export function ShopPageClient({ allProducts }: { allProducts: Product[] }) {
     }
 
     return result;
-  }, [searchQuery, selectedCategory, sortBy, priceRange, allProducts]);
+  }, [searchQuery, selectedCategory, sortBy, priceRange, showOnSale, showNewArrivals, allProducts]);
 
   const activeFilters = [];
   if (selectedCategory !== "All") activeFilters.push(selectedCategory);
   if (searchQuery) activeFilters.push(`"${searchQuery}"`);
   if (priceRange.min > 0 || priceRange.max < 500)
     activeFilters.push(`$${priceRange.min}-$${priceRange.max}`);
+  if (showOnSale) activeFilters.push("On Sale");
+  if (showNewArrivals) activeFilters.push("New Arrivals");
 
   return (
     <main className="min-h-screen bg-white pt-20">
@@ -176,6 +190,10 @@ export function ShopPageClient({ allProducts }: { allProducts: Product[] }) {
                 onCategoryChange={setSelectedCategory}
                 priceRange={priceRange}
                 onPriceRangeChange={setPriceRange}
+                showOnSale={showOnSale}
+                onShowOnSaleChange={setShowOnSale}
+                showNewArrivals={showNewArrivals}
+                onShowNewArrivalsChange={setShowNewArrivals}
               />
             </SheetContent>
           </Sheet>
@@ -219,6 +237,8 @@ export function ShopPageClient({ allProducts }: { allProducts: Product[] }) {
                   setSelectedCategory("All");
                   setSearchQuery("");
                   setPriceRange({ min: 0, max: 500 });
+                  setShowOnSale(false);
+                  setShowNewArrivals(false);
                 }}
               >
                 {filter}
@@ -230,6 +250,8 @@ export function ShopPageClient({ allProducts }: { allProducts: Product[] }) {
                 setSelectedCategory("All");
                 setSearchQuery("");
                 setPriceRange({ min: 0, max: 500 });
+                setShowOnSale(false);
+                setShowNewArrivals(false);
               }}
               className="text-sm text-gray-900 hover:text-gray-700 font-medium underline"
             >
@@ -248,6 +270,10 @@ export function ShopPageClient({ allProducts }: { allProducts: Product[] }) {
                 onCategoryChange={setSelectedCategory}
                 priceRange={priceRange}
                 onPriceRangeChange={setPriceRange}
+                showOnSale={showOnSale}
+                onShowOnSaleChange={setShowOnSale}
+                showNewArrivals={showNewArrivals}
+                onShowNewArrivalsChange={setShowNewArrivals}
               />
             </div>
           </aside>
@@ -281,6 +307,8 @@ export function ShopPageClient({ allProducts }: { allProducts: Product[] }) {
                     setSelectedCategory("All");
                     setSearchQuery("");
                     setPriceRange({ min: 0, max: 500 });
+                    setShowOnSale(false);
+                    setShowNewArrivals(false);
                   }}
                 >
                   Clear Filters
@@ -329,12 +357,20 @@ function FilterPanel({
   onCategoryChange,
   priceRange,
   onPriceRangeChange,
+  showOnSale,
+  onShowOnSaleChange,
+  showNewArrivals,
+  onShowNewArrivalsChange,
 }: {
   categories: string[];
   selectedCategory: string;
   onCategoryChange: (category: string) => void;
   priceRange: { min: number; max: number };
   onPriceRangeChange: (range: { min: number; max: number }) => void;
+  showOnSale: boolean;
+  onShowOnSaleChange: (value: boolean) => void;
+  showNewArrivals: boolean;
+  onShowNewArrivalsChange: (value: boolean) => void;
 }) {
   return (
     <div className="space-y-8">
@@ -405,15 +441,20 @@ function FilterPanel({
         </h3>
         <div className="space-y-2">
           {[
-            { label: "On Sale", filter: () => onCategoryChange("All") },
-            { label: "New Arrivals", filter: () => onCategoryChange("All") },
-            { label: "Under $100", filter: () => onPriceRangeChange({ min: 0, max: 100 }) },
-            { label: "$100 - $200", filter: () => onPriceRangeChange({ min: 100, max: 200 }) },
+            { label: "On Sale", active: showOnSale, filter: () => onShowOnSaleChange(!showOnSale) },
+            { label: "New Arrivals", active: showNewArrivals, filter: () => onShowNewArrivalsChange(!showNewArrivals) },
+            { label: "Under $100", active: false, filter: () => onPriceRangeChange({ min: 0, max: 100 }) },
+            { label: "$100 - $200", active: false, filter: () => onPriceRangeChange({ min: 100, max: 200 }) },
           ].map((item) => (
             <button
               key={item.label}
               onClick={item.filter}
-              className="block w-full text-left px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-colors"
+              className={cn(
+                "block w-full text-left px-3 py-2 rounded-lg text-sm transition-colors",
+                item.active
+                  ? "bg-gray-800 text-white font-medium"
+                  : "text-gray-600 hover:bg-gray-100"
+              )}
             >
               {item.label}
             </button>
