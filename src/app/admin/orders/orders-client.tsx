@@ -195,6 +195,7 @@ export function AdminOrdersClient({ initialOrders }: { initialOrders: Order[] })
                 <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">Status</th>
                 <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">Payment</th>
                 <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">Method</th>
+                <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">Tracking</th>
                 <th className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">Date</th>
                 <th className="text-right text-xs font-medium text-gray-500 uppercase tracking-wider px-6 py-3">Actions</th>
               </tr>
@@ -202,7 +203,7 @@ export function AdminOrdersClient({ initialOrders }: { initialOrders: Order[] })
             <tbody className="divide-y divide-gray-100">
               {filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-sm text-gray-500">
+                  <td colSpan={10} className="px-6 py-12 text-center text-sm text-gray-500">
                     No orders found.
                   </td>
                 </tr>
@@ -242,8 +243,26 @@ export function AdminOrdersClient({ initialOrders }: { initialOrders: Order[] })
                           <option value="Delivered">Delivered</option>
                           <option value="Cancelled">Cancelled</option>
                       </select>
-                      {(order.status === "Shipped" || order.status === "Delivered") && (
-                        <div className="mt-2 space-y-1">
+                    </td>
+                    <td className="px-6 py-4">
+                    <select
+                        value={order.paymentStatus || "Pending"}
+                        onChange={(e) => updatePaymentStatus(order.id, e.target.value)}
+                        className={`text-xs font-medium rounded-full px-2.5 py-0.5 border-0 cursor-pointer ${
+                        paymentColors[order.paymentStatus || "Pending"]
+                        }`}
+                    >
+                        <option value="Pending">Pending</option>
+                        <option value="Paid">Paid</option>
+                        <option value="Refunded">Refunded</option>
+                    </select>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {order.paymentMethod === "cod" ? "COD" : "Stripe"}
+                    </td>
+                    <td className="px-6 py-4">
+                      {(order.status === "Shipped" || order.status === "Delivered") ? (
+                        <div className="space-y-1">
                           {order.trackingNumber || order.carrier ? (
                             <div className="text-[11px] text-gray-500 leading-tight">
                               <p className="font-medium text-gray-700">{order.carrier || "Carrier"}</p>
@@ -282,23 +301,9 @@ export function AdminOrdersClient({ initialOrders }: { initialOrders: Order[] })
                             </div>
                           )}
                         </div>
+                      ) : (
+                        <span className="text-xs text-gray-400">—</span>
                       )}
-                    </td>
-                    <td className="px-6 py-4">
-                    <select
-                        value={order.paymentStatus || "Pending"}
-                        onChange={(e) => updatePaymentStatus(order.id, e.target.value)}
-                        className={`text-xs font-medium rounded-full px-2.5 py-0.5 border-0 cursor-pointer ${
-                        paymentColors[order.paymentStatus || "Pending"]
-                        }`}
-                    >
-                        <option value="Pending">Pending</option>
-                        <option value="Paid">Paid</option>
-                        <option value="Refunded">Refunded</option>
-                    </select>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {order.paymentMethod === "cod" ? "COD" : "Stripe"}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
                       {order.createdAt
