@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSession } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
 import { useWishlistStore } from "@/store/wishlist";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,6 +52,15 @@ export function ProductDetailClient({ product, relatedProducts }: { product: Pro
   const [quantity, setQuantity] = useState(1);
   const wishlistStore = useWishlistStore();
   const isLiked = wishlistStore.isLiked(product?.id || "");
+
+  const handleWishlistToggle = () => {
+    if (!session) {
+      signIn();
+      return;
+    }
+    if (!product) return;
+    wishlistStore.toggleItem(product.id);
+  };
 
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewLoading, setReviewLoading] = useState(true);
@@ -457,7 +466,7 @@ export function ProductDetailClient({ product, relatedProducts }: { product: Pro
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => wishlistStore.toggleItem(product.id)}
+                onClick={handleWishlistToggle}
                 className={cn(
                   "h-12 w-12 flex-shrink-0",
                   isLiked && "border-red-200 bg-red-50"

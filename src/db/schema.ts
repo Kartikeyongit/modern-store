@@ -110,6 +110,13 @@ export const verificationTokens = sqliteTable("verification_tokens", {
   expires: integer("expires", { mode: "timestamp" }).notNull(),
 });
 
+export const wishlistItems = sqliteTable("wishlist_items", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  productId: text("product_id").notNull().references(() => products.id, { onDelete: "cascade" }),
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
 export const storeSettings = sqliteTable("store_settings", {
   id: text("id").primaryKey(),
   storeName: text("store_name").notNull().default("Borrow"),
@@ -146,6 +153,18 @@ export const orderItemsRelations = relations(orderItems, ({ one }) => ({
 export const usersRelations = relations(users, ({ many }) => ({
   orders: many(orders),
   reviews: many(reviews),
+  wishlistItems: many(wishlistItems),
+}));
+
+export const wishlistItemsRelations = relations(wishlistItems, ({ one }) => ({
+  user: one(users, {
+    fields: [wishlistItems.userId],
+    references: [users.id],
+  }),
+  product: one(products, {
+    fields: [wishlistItems.productId],
+    references: [products.id],
+  }),
 }));
 
 export const reviewsRelations = relations(reviews, ({ one }) => ({

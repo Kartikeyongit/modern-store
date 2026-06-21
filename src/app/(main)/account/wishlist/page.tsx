@@ -9,13 +9,13 @@ import type { Product } from "@/types/product";
 import { ArrowLeft, Heart } from "lucide-react";
 
 export default function WishlistPage() {
-  const wishlistStore = useWishlistStore();
+  const items = useWishlistStore((s) => s.items);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchWishlistProducts = async () => {
-      if (wishlistStore.items.length === 0) {
+      if (items.length === 0) {
         setLoading(false);
         return;
       }
@@ -28,7 +28,7 @@ export default function WishlistPage() {
           colors: typeof p.colors === 'string' && p.colors ? JSON.parse(p.colors) : p.colors,
           sizes: typeof p.sizes === 'string' && p.sizes ? JSON.parse(p.sizes) : p.sizes,
         }));
-        const wishlistItems = parsed.filter((p: Product) => wishlistStore.items.includes(p.id));
+        const wishlistItems = parsed.filter((p: Product) => items.includes(p.id));
         setProducts(wishlistItems);
       } catch (error) {
         console.error("Failed to fetch wishlist:", error);
@@ -37,7 +37,7 @@ export default function WishlistPage() {
       }
     };
     fetchWishlistProducts();
-  }, [wishlistStore.items]);
+  }, [items]);
 
   return (
     <main className="min-h-screen bg-gray-50 pt-20">
@@ -49,7 +49,7 @@ export default function WishlistPage() {
 
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">My Wishlist</h1>
-          <p className="text-gray-500 mt-1">{wishlistStore.items.length} {wishlistStore.items.length === 1 ? "item" : "items"} saved</p>
+          <p className="text-gray-500 mt-1">{items.length} {items.length === 1 ? "item" : "items"} saved</p>
         </div>
 
         {loading ? (

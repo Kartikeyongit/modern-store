@@ -9,17 +9,23 @@ import { Button } from "@/components/ui/button";
 import { Product } from "@/types/product";
 import { useCartStore } from "@/store/cart";
 import { useWishlistStore } from "@/store/wishlist";
+import { useSession, signIn } from "next-auth/react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 export function ProductCard({ product }: { product: Product }) {
   const [isHovered, setIsHovered] = useState(false);
+  const { data: session } = useSession();
   const wishlistStore = useWishlistStore();
   const isLiked = wishlistStore.isLiked(product.id);
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!session) {
+      signIn();
+      return;
+    }
     wishlistStore.toggleItem(product.id);
   };
     // Parse colors and sizes if they're strings (from API)
