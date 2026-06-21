@@ -88,6 +88,14 @@ export default async function InvoicePage({
 
   return (
     <main className="min-h-screen bg-gray-100 pt-20 print:bg-white">
+      <style>{`
+        @page { size: A4; margin: 20mm; }
+        @media print {
+          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          thead { display: table-header-group; }
+          .no-break { page-break-inside: avoid; }
+        }
+      `}</style>
       {/* Print button — hidden when printing */}
       <div className="max-w-3xl mx-auto px-4 py-6 print:hidden">
         <div className="flex items-center justify-between mb-6">
@@ -101,7 +109,7 @@ export default async function InvoicePage({
 
       {/* Invoice */}
       <div className="max-w-3xl mx-auto px-4 pb-16 print:pb-0 print:mx-0 print:max-w-none">
-        <div className="bg-white rounded-2xl shadow-sm border print:rounded-none print:shadow-none print:border-0 p-8 md:p-12 print:p-8">
+        <div className="bg-white rounded-2xl shadow-sm border print:rounded-none print:shadow-none print:border-0 p-8 md:p-12 print:p-0">
           {/* Header */}
           <div className="flex items-start justify-between mb-10 print:mb-8">
             <div>
@@ -165,7 +173,7 @@ export default async function InvoicePage({
           </table>
 
           {/* Totals */}
-          <div className="flex justify-end mb-8 print:mb-6">
+          <div className="flex justify-end mb-8 print:mb-6 no-break">
             <div className="w-64 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Subtotal</span>
@@ -187,7 +195,7 @@ export default async function InvoicePage({
           </div>
 
           {/* Payment Info */}
-          <div className="border-t pt-6 print:pt-4">
+          <div className="border-t pt-6 print:pt-4 no-break">
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <span className="font-medium text-gray-900">Payment:</span>
               <span className={order.paymentStatus === "Paid" ? "text-emerald-700" : ""}>
