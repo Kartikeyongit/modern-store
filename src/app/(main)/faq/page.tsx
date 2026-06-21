@@ -59,7 +59,7 @@ export default function FAQPage() {
             <span className="text-xs text-white/40 tracking-[0.2em] uppercase mb-4 block">Help Center</span>
             <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 tracking-tight">Frequently Asked Questions</h1>
             <p className="text-lg text-white/60 font-light max-w-xl mx-auto">
-              Everything you need to know about shopping with Modern Store.
+               Everything you need to know about shopping with Borrow.
             </p>
           </motion.div>
         </div>

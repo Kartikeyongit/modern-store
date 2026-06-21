@@ -1126,7 +1126,7 @@ async function seed() {
   console.log("Creating store settings...");
   await db.insert(storeSettings).values({
     id: "main",
-    storeName: "Modern Store",
+    storeName: "Borrow",
     supportEmail: "support@modernstore.com",
     shippingThreshold: 100,
     shippingRate: 9.99,

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { OrderReview } from "./order-review";
-import { ArrowLeft, Truck, Shield, Package, Check } from "lucide-react";
+import { ArrowLeft, Truck, Shield, Package, Check, FileText } from "lucide-react";
 
 const timelineSteps = [
   { key: "Pending", label: "Order Placed" },
@@ -292,6 +292,18 @@ export default async function OrderDetailPage({
               <span className="text-sm text-gray-500">via {order.paymentMethod === "cod" ? "Cash on Delivery" : "Stripe"}</span>
             </div>
           </div>
+
+          {/* Download Invoice */}
+          {order.status === "Delivered" && order.paymentStatus === "Paid" && (
+            <div className="border-t mt-6 pt-6">
+              <Link href={`/account/orders/${order.id}/invoice`}>
+                <Button className="w-full bg-black text-white hover:bg-white hover:text-black border-2 border-black transition-colors">
+                  <FileText className="h-4 w-4 mr-2" />
+                  Download Invoice
+                </Button>
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </main>

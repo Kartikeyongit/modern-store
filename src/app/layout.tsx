@@ -12,7 +12,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Modern Store - Style Meets Innovation",
+  title: "Borrow - Style Meets Innovation",
   description:
     "Discover our curated collection of premium products designed for the modern lifestyle.",
 };

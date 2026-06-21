@@ -33,7 +33,7 @@ export async function PUT(req: Request) {
   const updated = await db
     .update(storeSettings)
     .set({
-      storeName: storeName ?? "Modern Store",
+      storeName: storeName ?? "Borrow",
       supportEmail: supportEmail ?? "support@modernstore.com",
       shippingThreshold: shippingThreshold ?? 100,
       shippingRate: shippingRate ?? 9.99,

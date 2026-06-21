@@ -62,7 +62,7 @@ export default function AboutPage() {
               </h2>
               <div className="space-y-4 text-neutral-500 font-light leading-relaxed">
                 <p>
-                  Founded in 2024, Modern Store set out to redefine the online shopping experience. We partner with independent designers and trusted brands to bring you products that combine functionality with aesthetics.
+                   Founded in 2024, Borrow set out to redefine the online shopping experience. We partner with independent designers and trusted brands to bring you products that combine functionality with aesthetics.
                 </p>
                 <p>
                   Every item in our collection is selected for its quality, design integrity, and ability to make your daily life better. We are not just a store — we are a community of people who appreciate the thoughtful details.
