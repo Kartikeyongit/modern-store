@@ -30,7 +30,7 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
       <aside className="fixed top-0 left-0 bottom-0 w-64 bg-white border-r z-30 flex flex-col">
         {/* Admin Header */}
@@ -79,10 +79,8 @@ export default async function AdminLayout({
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 ml-64">
-        <main className="min-h-screen p-6">
-          {children}
-        </main>
+      <div className="ml-64 min-h-screen p-6">
+        {children}
       </div>
     </div>
   );
