@@ -18,6 +18,8 @@ A production-ready, full-stack ecommerce platform built with Next.js 14, Tailwin
 - **Collections, New Arrivals, Sale Pages** — Curated browsing experiences
 - **Live Search** — Instant product search dropdown in navbar
 - **Wishlist** — Save favorite products with heart toggle
+- **Reviews** — Product reviews with create/delete via API
+- **Static Pages** — About, Careers, Contact, FAQ, Privacy Policy, Returns, Shipping, Terms of Service
 
 ### Admin Dashboard
 
@@ -25,13 +27,19 @@ A production-ready, full-stack ecommerce platform built with Next.js 14, Tailwin
 - **Product Management** — Add, edit, delete products with multi-image upload (Uploadthing)
 - **Order Management** — View orders, update status and payment status
 - **Customer Management** — View registered customers
+- **Settings** — Store-wide configuration
 
 ### Authentication
 
-- User registration and login (NextAuth.js)
-- Protected routes (middleware)
-- Account dashboard with order history
-- Address saving for faster checkout
+- Email/password registration and login (NextAuth.js)
+- Google OAuth social login
+- Protected routes via middleware (checkout, account, admin)
+- Account dashboard with order history and detail view
+- Profile editing (name, email)
+- Password management (change password, check if set)
+- Account deletion
+- Address management (save, edit, delete shipping addresses)
+- Printable invoice for completed orders
 
 ## 🛠️ Tech Stack
 
@@ -40,7 +48,8 @@ A production-ready, full-stack ecommerce platform built with Next.js 14, Tailwin
 | **Next.js 14** | Framework (App Router) |
 | **TypeScript** | Type safety |
 | **Tailwind CSS** | Styling |
-| **shadcn/ui (Nova preset)** | UI Components |
+| **shadcn/ui (Radix Nova)** | UI Components |
+| **Radix UI** | Headless UI primitives |
 | **Turso** | Cloud SQLite database |
 | **Drizzle ORM** | Database ORM |
 | **Stripe** | Payment processing |
@@ -87,6 +96,10 @@ STRIPE_WEBHOOK_SECRET=whsec_xxxxx
 
 # Uploadthing
 UPLOADTHING_TOKEN=your-uploadthing-token
+
+# Google OAuth (optional)
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
 ```
 
 ### 4. Set up the database
@@ -119,11 +132,14 @@ npm run build
 # Start production server
 npm start
 
-# Push database schema changes
-npx drizzle-kit push
+# Lint
+npm run lint
 
 # Seed database with products
-npx tsx src/db/seed.ts
+npm run seed
+
+# Push database schema changes
+npx drizzle-kit push
 
 # Generate auth secret
 npx auth secret
@@ -134,32 +150,67 @@ npx auth secret
 ```
 modern-store/
 ├── src/
-│   ├── app/                    # Next.js App Router pages
-│   │   ├── account/            # User account pages
-│   │   ├── admin/              # Admin dashboard
-│   │   ├── api/                # API routes
-│   │   ├── auth/               # Authentication pages
-│   │   ├── checkout/           # Checkout flow
-│   │   ├── collections/        # Collections page
-│   │   ├── new-arrivals/       # New arrivals page
-│   │   ├── products/           # Product detail pages
-│   │   ├── sale/               # Sale page
-│   │   └── shop/               # Shop page
-│   ├── components/             # React components
-│   │   ├── admin/              # Admin components
-│   │   ├── cart/               # Cart drawer
-│   │   ├── layout/             # Layout (Navbar, etc.)
-│   │   └── product/            # Product cards
-│   ├── data/                   # Static data (seed)
-│   ├── db/                     # Database schema & connection
-│   ├── lib/                    # Utilities (auth, stripe, etc.)
-│   ├── store/                  # Zustand stores (cart, wishlist, search)
-│   └── types/                  # TypeScript types
-├── drizzle/                    # Drizzle migrations
-├── public/                     # Static assets
-├── next.config.mjs             # Next.js configuration
-├── tailwind.config.js          # Tailwind CSS configuration
-└── package.json                # Dependencies
+│   ├── app/                          # Next.js App Router pages
+│   │   ├── (main)/                   # Storefront route group
+│   │   │   ├── page.tsx              # Homepage
+│   │   │   ├── about/                # About Us
+│   │   │   ├── careers/              # Careers
+│   │   │   ├── collections/          # Collections
+│   │   │   ├── contact/              # Contact
+│   │   │   ├── faq/                  # FAQ
+│   │   │   ├── privacy/              # Privacy Policy
+│   │   │   ├── returns/              # Returns Policy
+│   │   │   ├── shipping/             # Shipping Info
+│   │   │   ├── terms/                # Terms of Service
+│   │   │   ├── account/              # Account pages
+│   │   │   │   ├── page.tsx          # Dashboard
+│   │   │   │   ├── profile/          # Edit profile
+│   │   │   │   ├── settings/         # Account settings
+│   │   │   │   ├── wishlist/         # Saved items
+│   │   │   │   └── orders/           # Order history & invoices
+│   │   │   ├── auth/                 # Login / Register
+│   │   │   ├── checkout/             # Checkout + success
+│   │   │   ├── new-arrivals/         # New arrivals
+│   │   │   ├── products/[id]/        # Product detail
+│   │   │   ├── sale/                 # Sale items
+│   │   │   └── shop/                 # Shop listings
+│   │   ├── admin/                    # Admin dashboard
+│   │   │   ├── page.tsx              # Overview with charts
+│   │   │   ├── products/             # Product CRUD
+│   │   │   ├── orders/               # Order management
+│   │   │   ├── customers/            # Customer list
+│   │   │   └── settings/             # Store settings
+│   │   └── api/                      # API routes
+│   │       ├── auth/                 # NextAuth + register
+│   │       ├── account/              # Profile, password, delete
+│   │       ├── addresses/            # Address CRUD
+│   │       ├── products/             # Product CRUD
+│   │       ├── reviews/              # Review CRUD
+│   │       ├── wishlist/             # Wishlist toggle
+│   │       ├── checkout/             # Stripe session
+│   │       ├── search/               # Live search
+│   │       ├── uploadthing/          # File uploads
+│   │       ├── webhooks/stripe/      # Stripe webhooks
+│   │       └── admin/                # Admin data endpoints
+│   ├── components/
+│   │   ├── ui/                       # shadcn/ui primitives
+│   │   ├── layout/                   # Navbar, Footer
+│   │   ├── cart/                     # CartDrawer
+│   │   ├── product/                  # ProductCard, ProductListItem
+│   │   ├── admin/                    # DashboardCharts
+│   │   └── wishlist/                 # WishlistHydrator
+│   ├── data/                         # Static seed data
+│   ├── db/                           # Schema, connection, seed
+│   ├── lib/                          # Auth, stripe, utils
+│   ├── store/                        # Zustand (cart, wishlist, search)
+│   └── types/                        # TypeScript type definitions
+├── drizzle/                          # Drizzle migrations
+├── prisma/                           # Prisma schema (legacy)
+├── public/                           # Static assets
+├── components.json                   # shadcn/ui config
+├── next.config.mjs                   # Next.js config
+├── tailwind.config.ts                # Tailwind CSS config
+└── package.json                      # Dependencies
 ```
 
 ## 🗄️ Database
